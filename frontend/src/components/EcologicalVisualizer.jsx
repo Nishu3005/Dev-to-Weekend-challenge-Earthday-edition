@@ -28,21 +28,12 @@ export default function EcologicalVisualizer({ appState, analysisResult, executi
         transition={{ duration: 0.3 }}
         className="flex flex-col gap-6"
       >
-        {/* Product header */}
-        <div className="flex items-center justify-between border-b border-gray-100 pb-3">
-          <div>
-            <div className="text-xs text-gray-400 uppercase tracking-wider">Analysing Order</div>
-            <div className="text-base font-bold text-gray-800 mt-0.5">
-              {originalRequest.quantity.toLocaleString()} × {originalRequest.productName}
-            </div>
-          </div>
-        </div>
-
         {/* 🌍 3D Unified World View */}
-        <CombinedWorldScene 
+        <CombinedWorldScene
           deforestationTrees={lcaResult.deforestationCostTrees}
           waterLiters={lcaResult.waterCostLiters}
           carbonKg={lcaResult.carbonCostKg}
+          productName={originalRequest.productName}
         />
 
         {/* Backboard Warnings */}
@@ -100,6 +91,22 @@ export default function EcologicalVisualizer({ appState, analysisResult, executi
                   <div className="text-xs font-mono text-gray-400 mt-0.5">ID: {executionResult.vaultLogId}</div>
                 </div>
               </div>
+              {executionResult.savings && (
+                <div className="grid grid-cols-3 gap-2 pt-3 border-t border-emerald-200">
+                  <div className="text-center bg-white rounded-lg p-2 border border-emerald-100">
+                    <div className="text-xs text-amber-600 font-semibold mb-0.5">🌳 Trees Saved</div>
+                    <div className="text-sm font-bold text-amber-800">{Math.round(executionResult.savings.trees).toLocaleString()}</div>
+                  </div>
+                  <div className="text-center bg-white rounded-lg p-2 border border-emerald-100">
+                    <div className="text-xs text-blue-600 font-semibold mb-0.5">💧 Water Saved</div>
+                    <div className="text-sm font-bold text-blue-800">{Math.round(executionResult.savings.water).toLocaleString()} L</div>
+                  </div>
+                  <div className="text-center bg-white rounded-lg p-2 border border-emerald-100">
+                    <div className="text-xs text-slate-600 font-semibold mb-0.5">🏭 CO₂ Avoided</div>
+                    <div className="text-sm font-bold text-slate-800">{Math.round(executionResult.savings.carbon).toLocaleString()} kg</div>
+                  </div>
+                </div>
+              )}
             </motion.div>
           )}
         </AnimatePresence>

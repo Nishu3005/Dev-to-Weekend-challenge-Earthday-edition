@@ -1,8 +1,50 @@
-# GreenGate
+# GreenGate 🌿
 
-**Autonomous Procurement Guardian** — powered by Google Gemini AI.
+**Autonomous Procurement Guardian** — Earth Day Weekend Challenge
 
-GreenGate intercepts institutional procurement requests, calculates the real ecological cost using a Lifecycle Assessment engine, checks it against sustainability goals, and lets an AI agent securely draft a greener Purchase Order.
+GreenGate intercepts institutional procurement requests, calculates the real hidden ecological cost using Gemini AI, checks against sustainability goals, and lets an AI agent securely draft a greener Purchase Order — all visualised in a live animated world scene.
+
+---
+
+## Quick Start
+
+**Prerequisites:** Python 3.8+ and Node.js 18+
+
+```bash
+python start.py
+```
+
+That's it. The script installs all dependencies on first run, starts both servers, and opens the browser automatically.
+
+- Frontend → <http://localhost:5173>
+- Backend  → <http://localhost:3001>
+- Press **Ctrl+C** to stop
+
+---
+
+## API Keys (all optional)
+
+The app ships with mock fallbacks — runs fully without any keys. To activate real integrations, enter them in the **API Keys & Credentials** panel in the UI. No `.env` editing required.
+
+| Key | Effect |
+|---|---|
+| Gemini API Key | Real LCA on any product you type |
+| Backboard API Key + Project ID | Live institutional goal checks |
+| Auth0 Domain / Client / Secret / Audience | Authenticated M2M PO execution |
+| Snowflake Account + Credentials | Real immutable vault logging |
+
+Keys are sent only to your local backend and never stored.
+
+---
+
+## How It Works
+
+1. **Select** a preset product or type any product + quantity
+2. **Gemini LCA** calculates deforestation (trees), water (litres), carbon (kg CO₂e)
+3. **Backboard** flags breaches of institutional sustainability limits
+4. The **animated world scene** shows a lumberjack chopping, water flowing river → tanks → factory — all scaled to real ecological numbers
+5. **Approve** the sustainable alternative to trigger Auth0 M2M execution
+6. Transaction is **logged to Snowflake** and savings are displayed
 
 ---
 
@@ -10,133 +52,36 @@ GreenGate intercepts institutional procurement requests, calculates the real eco
 
 | Layer | Technology |
 |---|---|
-| AI Brain | Google Gemini (`gemini-2.5-flash`) |
-| Memory | Backboard (Institutional Goals) |
+| AI Brain | Google Gemini `gemini-2.5-flash` |
+| Memory | Backboard (Institutional Sustainability Goals) |
 | Execution | Auth0 for Agents (M2M) |
 | Data Vault | Snowflake (`procurement_logs`) |
 | Frontend | React + Vite + Tailwind CSS + Framer Motion |
 | Backend | Node.js + Express |
+| Dev Accelerator | GitHub Copilot |
 
 ---
 
 ## Project Structure
 
 ```
-Weekendchallenge-Earthday/
 ├── backend/
-│   ├── server.js          # Agentic API pipeline
-│   ├── package.json
-│   └── .env.example       # All required API keys
+│   ├── server.js              # Gemini → Backboard → Auth0 → Snowflake pipeline
+│   └── .env.example
 ├── frontend/
-│   ├── src/
-│   │   ├── App.jsx
-│   │   ├── components/
-│   │   │   ├── ProcurementForm.jsx
-│   │   │   └── EcologicalVisualizer.jsx
-│   │   └── data/
-│   │       └── presetProducts.js   # 7 pre-analysed orders
-│   ├── index.html
-│   └── package.json
-├── database/
-│   └── snowflake_schema.sql
+│   └── src/
+│       ├── App.jsx
+│       ├── components/
+│       │   ├── ProcurementForm.jsx
+│       │   ├── EcologicalVisualizer.jsx
+│       │   ├── CombinedWorldScene.jsx   # Animated SVG world
+│       │   └── ApiKeysPanel.jsx         # Live key entry
+│       └── data/presetProducts.js       # 7 offline presets
+├── database/snowflake_schema.sql
+├── start.py                   # One-command launcher
 └── spec.md
 ```
 
 ---
 
-## Getting Started
-
-### Prerequisites
-
-- [Node.js](https://nodejs.org/) v18 or higher
-- npm v9 or higher
-
-### 1. Clone / Open the project
-
-```bash
-cd Weekendchallenge-Earthday
-```
-
-### 2. Set up the Backend
-
-```bash
-cd backend
-npm install
-```
-
-Copy the environment file and fill in your API keys:
-
-```bash
-cp .env.example .env
-```
-
-Open `.env` and add:
-
-```
-GEMINI_API_KEY=your_key_here
-AUTH0_DOMAIN=your_domain.us.auth0.com
-AUTH0_CLIENT_ID=your_m2m_client_id
-AUTH0_CLIENT_SECRET=your_m2m_client_secret
-SNOWFLAKE_ACCOUNT=your_account_locator
-SNOWFLAKE_USERNAME=your_username
-SNOWFLAKE_PASSWORD=your_password
-SNOWFLAKE_WAREHOUSE=your_warehouse
-```
-
-> **Note:** The app works fully without API keys using built-in mock fallbacks. The 7 pre-loaded products require no API calls at all.
-
-Start the backend:
-
-```bash
-npm run dev
-```
-
-Backend runs on **http://localhost:3001**
-
-### 3. Set up the Frontend
-
-Open a second terminal:
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-Frontend runs on **http://localhost:5173**
-
-### 4. Open the app
-
-Navigate to **http://localhost:5173** in your browser.
-
----
-
-## How it Works
-
-1. **Select** a pre-assessed product from the left panel, or submit a new one.
-2. **GreenGate** calculates the ecological cost — trees, water, and carbon — using Gemini.
-3. **Backboard** flags the request if it violates institutional sustainability goals.
-4. **Approve** the sustainable alternative to trigger Auth0 M2M agent execution.
-5. The transaction is **logged immutably** to Snowflake.
-
----
-
-## Database Setup (Snowflake)
-
-Run the schema file to create the vault table:
-
-```sql
--- Found at: database/snowflake_schema.sql
-CREATE TABLE procurement_logs ( ... );
-```
-
----
-
-## API Endpoints
-
-| Method | Endpoint | Description |
-|---|---|---|
-| GET | `/api/health` | Server status |
-| POST | `/api/procurement/analyze` | Run Gemini LCA + Backboard check |
-| POST | `/api/procurement/execute` | Auth0 execution + Snowflake log |
-| GET | `/api/procurement/logs` | Retrieve session logs |
+Built for the **DEV.to Earth Day Weekend Challenge 2026**.

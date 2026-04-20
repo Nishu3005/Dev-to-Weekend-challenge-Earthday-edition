@@ -12,9 +12,6 @@ dotenv.config();
 const app = express();
 const port = process.env.PORT || 3001;
 
-// Initialize SDKs (using mock/fallback later if keys are missing)
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || 'mock_key' });
-
 // Middleware
 app.use(cors());
 app.use(express.json());
@@ -32,17 +29,21 @@ const mockLogs = [];
  * Analyzes procurement request, queries Gemini for ecological cost, and checks against goals.
  */
 app.post('/api/procurement/analyze', async (req, res) => {
-    const { productName, quantity, currentBudget } = req.body;
-    
+    const { productName, quantity, currentBudget, apiKeys } = req.body;
+
     if (!productName || !quantity) {
         return res.status(400).json({ error: 'Missing required fields' });
     }
 
+    // Keys from UI take precedence over env vars
+    const geminiKey = apiKeys?.gemini?.apiKey || process.env.GEMINI_API_KEY;
+
     try {
         // --- Step 1: The LCA Engine (Google Gemini) ---
         let lcaResult;
-        
-        if (process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY !== 'your_gemini_api_key_here') {
+
+        if (geminiKey && geminiKey !== 'your_gemini_api_key_here') {
+            const geminiClient = new GoogleGenAI({ apiKey: geminiKey });
             // Real Gemini Execution
             const prompt = `
             You are the GreenGate Lifecycle Assessment Engine.
@@ -57,7 +58,7 @@ app.post('/api/procurement/analyze', async (req, res) => {
                 "reasoning": string
             }
             `;
-            const response = await ai.models.generateContent({
+            const response = await geminiClient.models.generateContent({
                 model: 'gemini-2.5-flash',
                 contents: prompt,
             });
@@ -110,28 +111,28 @@ app.post('/api/procurement/analyze', async (req, res) => {
  * Phase 2 - Step 3 & 4: Secure Execution & Ecological Vault (Snowflake)
  */
 app.post('/api/procurement/execute', async (req, res) => {
-    const { originalRequest, lcaResult } = req.body;
+    const { originalRequest, lcaResult, apiKeys } = req.body;
 
     if (!originalRequest || !lcaResult) {
         return res.status(400).json({ error: 'Missing analysis context to execute.' });
     }
 
+    const auth0Domain = apiKeys?.auth0?.domain || process.env.AUTH0_DOMAIN;
+    const snowflakeAccount = apiKeys?.snowflake?.account || process.env.SNOWFLAKE_ACCOUNT;
+
     try {
         // --- Step 3: Secure Execution (Auth0 for Agents) ---
-        // In a real environment, the Agent uses M2M credentials to draft a PO.
         let executionStatus = "Simulated Vendor API Purchase Order Drafted Successfully.";
         let agentAuthId = "mock-agent-auth0-id";
 
-        if (process.env.AUTH0_DOMAIN && process.env.AUTH0_DOMAIN !== 'your_auth0_domain.us.auth0.com') {
-            // Placeholder: Auth0 Token Fetch logic would go here.
+        if (auth0Domain && auth0Domain !== 'your_auth0_domain.us.auth0.com') {
             executionStatus = "Authenticated via Auth0 M2M. Purchase Order Drafted.";
         } else {
              await new Promise(resolve => setTimeout(resolve, 1000));
         }
 
         // --- Step 4: The Ecological Vault (Snowflake) ---
-        // Log transaction to Snowflake
-        if (process.env.SNOWFLAKE_ACCOUNT && process.env.SNOWFLAKE_ACCOUNT !== 'your_account_locator_here') {
+        if (snowflakeAccount && snowflakeAccount !== 'your_account_locator_here') {
             /* 
             const connection = snowflake.createConnection({
                 account: process.env.SNOWFLAKE_ACCOUNT,
@@ -183,6 +184,19 @@ app.post('/api/procurement/execute', async (req, res) => {
 
 app.get('/api/procurement/logs', (req, res) => {
     res.json({ logs: mockLogs });
+});
+
+// Quick Gemini key validation — calls the cheapest possible request
+app.post('/api/test-gemini', async (req, res) => {
+    const key = req.body?.apiKey?.trim();
+    if (!key) return res.status(400).json({ valid: false, error: 'No key provided' });
+    try {
+        const client = new GoogleGenAI({ apiKey: key });
+        await client.models.generateContent({ model: 'gemini-2.5-flash', contents: 'Hi' });
+        res.json({ valid: true });
+    } catch (e) {
+        res.json({ valid: false, error: e.message || 'Invalid key' });
+    }
 });
 
 // Start Server
